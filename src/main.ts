@@ -1,6 +1,7 @@
-import {vec3} from 'gl-matrix';
+import {vec2, vec3} from 'gl-matrix';
 import * as Stats from 'stats-js';
 import * as DAT from 'dat-gui';
+import * as Tone from 'tone';
 import Square from './geometry/Square';
 import Mesh from './geometry/Mesh';
 import OpenGLRenderer from './rendering/gl/OpenGLRenderer';
@@ -9,6 +10,9 @@ import {setGL} from './globals';
 import {readTextFile} from './globals';
 import ShaderProgram, {Shader} from './rendering/gl/ShaderProgram';
 import Texture from './rendering/gl/Texture';
+
+// Synth stuff
+import Synth from './synth';
 
 // Define an object with application parameters and button callbacks
 const controls = {
@@ -28,6 +32,10 @@ let obj0: string;
 let mesh0: Mesh;
 
 let tex0: Texture;
+
+let synth0: Synth = new Synth;
+let mouseX: number;
+let mouseY: number;
 
 
 var timer = {
@@ -55,10 +63,10 @@ function loadScene() {
   square = new Square(vec3.fromValues(0, 0, 0));
   square.create();
 
-  mesh0 = new Mesh(obj0, vec3.fromValues(0, 0, 0));
-  mesh0.create();
+  //mesh0 = new Mesh(obj0, vec3.fromValues(0, 0, 0));
+  //mesh0.create();
 
-  tex0 = new Texture('./resources/textures/wahoo.bmp')
+  //tex0 = new Texture('./resources/textures/wahoo.bmp')
 }
 
 
@@ -78,6 +86,7 @@ function main() {
     gui.add(controls, 'Paint' );
     gui.add(controls, 'Vaporwave' );
     gui.add(controls, 'SSAO' );
+    gui.closed = true;
 
   // get canvas and webgl context
   const canvas = <HTMLCanvasElement> document.getElementById('canvas');
@@ -111,8 +120,9 @@ function main() {
     gl.viewport(0, 0, window.innerWidth, window.innerHeight);
     timer.updateTime();
     renderer.updateTime(timer.deltaTime, timer.currentTime);
+    renderer.updateMousePos(vec2.fromValues(0,0), vec2.fromValues(mouseX/1000,mouseY/1000));
 
-    standardDeferred.bindTexToUnit("tex_Color", tex0, 0);
+    //standardDeferred.bindTexToUnit("tex_Color", tex0, 0);
 
     renderer.clear();
     renderer.clearGB();
@@ -124,7 +134,7 @@ function main() {
 
     // TODO: pass any arguments you may need for shader passes
     // forward render mesh info into gbuffers
-    renderer.renderToGBuffer(camera, standardDeferred, [mesh0]);
+    //renderer.renderToGBuffer(camera, standardDeferred, [mesh0]);
     // render from gbuffers into 32-bit color buffer
     renderer.renderFromGBuffer(camera);
     // apply 32-bit post and tonemap from 32-bit color to 8-bit color
@@ -140,6 +150,21 @@ function main() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     camera.setAspectRatio(window.innerWidth / window.innerHeight);
     camera.updateProjectionMatrix();
+  }, false);
+
+  window.addEventListener('mousedown', function(event) {
+    mouseX = event.clientX;
+    mouseY = window.innerHeight - event.clientY;
+    synth0.startNote();
+  }, false);
+  window.addEventListener('mousemove', function(event) {
+    mouseX = event.clientX;
+    mouseY = window.innerHeight - event.clientY;
+    synth0.phaser.frequency.value = mouseX/100;
+    synth0.distortion.distortion = mouseY/400;
+  }, false);
+  window.addEventListener('mouseup', function(evnt) {
+    synth0.endNote();
   }, false);
 
   renderer.setSize(window.innerWidth, window.innerHeight);

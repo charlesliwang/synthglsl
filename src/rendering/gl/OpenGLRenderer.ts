@@ -1,4 +1,4 @@
-import {mat4, vec4, vec3} from 'gl-matrix';
+import {mat4, vec4, vec3, vec2} from 'gl-matrix';
 import Drawable from './Drawable';
 import Camera from '../../Camera';
 import {gl} from '../../globals';
@@ -34,6 +34,7 @@ class OpenGLRenderer {
   post32Passes: PostProcess[];
 
   currentTime: number; // timer number to apply to all drawing shaders
+  currentPos: vec2; // timer number to apply to all drawing shaders
 
   // the shader that renders from the gbuffers into the postbuffers
   deferredShader :  PostProcess = new PostProcess(
@@ -58,6 +59,7 @@ class OpenGLRenderer {
 
   constructor(public canvas: HTMLCanvasElement) {
     this.currentTime = 0.0;
+    this.currentPos = vec2.fromValues(0.5, 0.5);
     this.gbTargets = [undefined, undefined, undefined];
     this.post8Buffers = [undefined, undefined];
     this.post8Targets = [undefined, undefined];
@@ -200,6 +202,12 @@ class OpenGLRenderer {
     this.currentTime = currentTime;
   }
 
+  updateMousePos(deltaPos: vec2, currentPos: vec2) {
+    this.deferredShader.setMousePos(currentPos);
+    for (let pass of this.post8Passes) pass.setMousePos(currentPos);
+    for (let pass of this.post32Passes) pass.setMousePos(currentPos);
+    this.currentPos = currentPos;
+  }
 
   clear() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -233,6 +241,8 @@ class OpenGLRenderer {
     gbProg.setProjMatrix(proj);
 
     gbProg.setTime(this.currentTime);
+    gbProg.setMousePos(this.currentPos);
+
 
     for (let drawable of drawables) {
       gbProg.draw(drawable);
