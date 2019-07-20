@@ -1,0 +1,1 @@
+# synth glsl? maybe this way i'll learn about synth building and also keep up with web-ish dev?
