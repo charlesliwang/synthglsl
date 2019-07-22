@@ -1,31 +1,6 @@
 import * as Tone from 'tone';
-
-var synthA = new Tone.Synth({
-    oscillator: {
-      type: 'fmsquare',
-      modulationType: 'sawtooth',
-      modulationIndex: 3,
-      harmonicity: 3.4
-    },
-    envelope: {
-      attack: 0.001,
-      decay: 0.1,
-      sustain: 0.1,
-      release: 0.1
-    }
-  })
   
-  var synthB = new Tone.Synth({
-    oscillator: {
-      type: 'triangle8'
-    },
-    envelope: {
-      attack: 2,
-      decay: 1,
-      sustain: 0.4,
-      release: 4
-    }
-  })
+  let preset_json = require('../resources/synth_presets/presets.json')
 
   var phaserA = new Tone.Phaser({
 	"frequency" : 15,
@@ -34,21 +9,36 @@ var synthA = new Tone.Synth({
   }).toMaster();
 
   var distortionA = new Tone.Distortion(0.6)
+  var autoWah = new Tone.AutoWah(100, 6, -30).toMaster();
+  var crusher = new Tone.BitCrusher(8).toMaster();
 
 class Synth {
 
     synth : any;
     phaser = phaserA;
     distortion = distortionA;
-    constructor() {
-        this.synth = synthB.chain(this.distortion, this.phaser).toMaster()
+    synthName : string = "drums";
+    constructor(synthName : string) {
+      this.synthName = synthName;
+      let synthB;
+        if(this.synthName == "synthB") {
+          synthB = new Tone.Synth(preset_json[synthName]).chain(crusher,autoWah,phaserA,distortionA)
+        } else if (this.synthName == "drums") {
+          synthB = new Tone.MembraneSynth();
+        } else if (this.synthName == "cymbals") {
+          synthB = new Tone.MetalSynth(preset_json[synthName]);
+        }
+        this.synth = synthB.toMaster()
     }
 
-    startNote() {
+    startNote(note: string) {
 
         //play a middle 'C' for the duration
-        this.synth.add
-        this.synth.triggerAttack("C4");
+        if(this.synthName == "cymbals") {
+          this.synth.triggerAttack();
+        } else {
+          this.synth.triggerAttack(note);
+        }
     }
     endNote() {
         // Release note

@@ -13,6 +13,7 @@ import Texture from './rendering/gl/Texture';
 
 // Synth stuff
 import Synth from './synth';
+import synth from './synth';
 
 // Define an object with application parameters and button callbacks
 const controls = {
@@ -33,7 +34,11 @@ let mesh0: Mesh;
 
 let tex0: Texture;
 
-let synth0: Synth = new Synth;
+let synth0: Synth = new Synth("synthB");
+let synthdrum: Synth = new Synth("drums");
+let synthcymbal: Synth = new Synth("cymbals");
+let drumdown = 0;
+let drumkey : number;
 let mouseX: number;
 let mouseY: number;
 
@@ -152,10 +157,12 @@ function main() {
     camera.updateProjectionMatrix();
   }, false);
 
+  let notes = ["C","D","E","F","G","A","B"];
   window.addEventListener('mousedown', function(event) {
     mouseX = event.clientX;
     mouseY = window.innerHeight - event.clientY;
-    synth0.startNote();
+    let note : string = notes[Math.round(mouseX / 20 ) % notes.length]
+    synth0.startNote(note + "4");
   }, false);
   window.addEventListener('mousemove', function(event) {
     mouseX = event.clientX;
@@ -166,7 +173,24 @@ function main() {
   window.addEventListener('mouseup', function(evnt) {
     synth0.endNote();
   }, false);
-
+  window.addEventListener('keydown', function(event) {
+    if (event.keyCode != drumkey) {
+      drumdown = 0;
+      drumkey = event.keyCode;
+    }
+    if(drumdown == 0) {
+      if (drumkey == 13) {
+        synthcymbal.startNote("");
+      } else {
+        synthdrum.startNote("C0");
+      }
+    }
+    drumdown = 1;
+  }, false);
+  window.addEventListener('keyup', function(event) {
+    synthdrum.endNote();
+    drumdown = 0;
+  }, false);
   renderer.setSize(window.innerWidth, window.innerHeight);
   camera.setAspectRatio(window.innerWidth / window.innerHeight);
   camera.updateProjectionMatrix();
