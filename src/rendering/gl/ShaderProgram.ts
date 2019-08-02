@@ -35,6 +35,7 @@ class ShaderProgram {
   unifColor: WebGLUniformLocation;
   unifTime: WebGLUniformLocation;
   unifMousePos: WebGLUniformLocation;
+  unifBeat: WebGLUniformLocation;
 
   unifTexUnits: Map<string, WebGLUniformLocation>;
 
@@ -61,6 +62,7 @@ class ShaderProgram {
     this.unifColor = gl.getUniformLocation(this.prog, "u_Color");
     this.unifTime = gl.getUniformLocation(this.prog, "u_Time")
     this.unifMousePos = gl.getUniformLocation(this.prog, "u_MousePos")
+    this.unifBeat = gl.getUniformLocation(this.prog, "u_Beat")
 
     this.unifTexUnits = new Map<string, WebGLUniformLocation>();
   }
@@ -149,6 +151,13 @@ class ShaderProgram {
     this.use();
     if (this.unifMousePos !== -1) {
       gl.uniform4fv(this.unifMousePos, vec4.fromValues(pos[0],pos[1],0,1));
+    }
+  }
+
+  setBeat(t: number) {
+    this.use();
+    if (this.unifBeat !== -1) {
+      gl.uniform1f(this.unifBeat, t);
     }
   }
 

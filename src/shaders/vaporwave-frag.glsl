@@ -10,6 +10,7 @@ uniform sampler2D u_gb1;
 uniform sampler2D u_gb2;
 uniform float u_Time;
 uniform vec4 u_MousePos;
+uniform float u_Beat;
 
 #define BIAS 0.7
 #define COUNT 32
@@ -193,6 +194,6 @@ void main() {
 	}
 
 	 out_Col = vec4(color ,1.0);
-	 out_Col = vec4(u_MousePos);
+	 out_Col = vec4(u_MousePos[0],0, 0,0);
 	 //out_Col = vec4(vec3(ao) ,1.0);
 }

@@ -13,7 +13,7 @@ import Texture from './rendering/gl/Texture';
 
 // Synth stuff
 import Synth from './synth';
-import synth from './synth';
+import { lookup } from 'dns';
 
 // Define an object with application parameters and button callbacks
 const controls = {
@@ -33,6 +33,8 @@ let obj0: string;
 let mesh0: Mesh;
 
 let tex0: Texture;
+let beatStart : number;
+
 
 let synth0: Synth = new Synth("synthB");
 let synthdrum: Synth = new Synth("drums");
@@ -42,6 +44,11 @@ let drumkey : number;
 let mouseX: number;
 let mouseY: number;
 
+let started = 0;
+
+enum KeyBoard {
+  SPACE = 32,
+}
 
 var timer = {
   deltaTime: 0.0,
@@ -53,6 +60,36 @@ var timer = {
     timer.deltaTime = t - timer.currentTime;
     timer.currentTime = t;
   },
+}
+
+let baseBeat = [
+  ["0:0", "C2"],
+  ["0:0:1", "C2"], 
+  ["0:0:2", "C2"], 
+  ["0:0:3", "C2"], 
+];
+function toneStartup() {
+  console.log("startup")
+  var synth = new Tone.Synth().toMaster()
+  // var pitchShift = new Tone.PitchShift(2).toMaster()
+  // pitchShift.windowSize = 0.03;
+  // synth.chain(pitchShift)
+
+  var part = new Tone.Part(function(time:string, note:string){
+    //the notes given as the second element in the array
+    //will be passed in as the second argument
+    beatStart = timer.currentTime;
+    synth.triggerAttackRelease(note, "16n", time);
+  }, baseBeat).start();
+  part.loop = true; 
+  part.loopEnd = '1m'
+  Tone.Transport.start();
+  Tone.Transport.bpm.value = 180;
+}
+
+function restartLoop() {
+  Tone.Transport.stop()
+  Tone.Transport.start()
 }
 
 
@@ -126,6 +163,7 @@ function main() {
     timer.updateTime();
     renderer.updateTime(timer.deltaTime, timer.currentTime);
     renderer.updateMousePos(vec2.fromValues(0,0), vec2.fromValues(mouseX/1000,mouseY/1000));
+    renderer.updateBeat(timer.deltaTime, timer.currentTime - beatStart);
 
     //standardDeferred.bindTexToUnit("tex_Color", tex0, 0);
 
@@ -159,6 +197,10 @@ function main() {
 
   let notes = ["C","D","E","F","G","A","B"];
   window.addEventListener('mousedown', function(event) {
+    if(started == 0) {
+      started = 1;
+      toneStartup();
+    }
     mouseX = event.clientX;
     mouseY = window.innerHeight - event.clientY;
     let note : string = notes[Math.round(mouseX / 20 ) % notes.length]
@@ -177,6 +219,8 @@ function main() {
     if (event.keyCode != drumkey) {
       drumdown = 0;
       drumkey = event.keyCode;
+    } else if (event.keyCode == KeyBoard.SPACE) {
+      restartLoop();
     }
     if(drumdown == 0) {
       if (drumkey == 13) {

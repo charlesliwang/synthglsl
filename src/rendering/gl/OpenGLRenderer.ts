@@ -34,7 +34,8 @@ class OpenGLRenderer {
   post32Passes: PostProcess[];
 
   currentTime: number; // timer number to apply to all drawing shaders
-  currentPos: vec2; // timer number to apply to all drawing shaders
+  currentPos: vec2; // TODO comment
+  currentBeat: number; // TODO comment
 
   // the shader that renders from the gbuffers into the postbuffers
   deferredShader :  PostProcess = new PostProcess(
@@ -207,6 +208,13 @@ class OpenGLRenderer {
     for (let pass of this.post8Passes) pass.setMousePos(currentPos);
     for (let pass of this.post32Passes) pass.setMousePos(currentPos);
     this.currentPos = currentPos;
+  }
+
+  updateBeat(deltaTime: number, currentBeat: number) {
+    this.deferredShader.setBeat(currentBeat);
+    for (let pass of this.post8Passes) pass.setBeat(currentBeat);
+    for (let pass of this.post32Passes) pass.setBeat(currentBeat);
+    this.currentBeat = currentBeat;
   }
 
   clear() {
