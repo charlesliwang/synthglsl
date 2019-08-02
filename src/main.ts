@@ -63,11 +63,10 @@ var timer = {
 }
 
 let baseBeat = [
-  ["0:0", "C2"],
-  ["0:0:1", "C2"], 
-  ["0:0:2", "C2"], 
-  ["0:0:3", "C2"], 
+  {"time": "0:0", "note": "C2", "dur": "8n"},
+  {"time": "0:1", "note": "C2", "dur": "2n"}
 ];
+
 function toneStartup() {
   console.log("startup")
   var synth = new Tone.Synth().toMaster()
@@ -75,11 +74,11 @@ function toneStartup() {
   // pitchShift.windowSize = 0.03;
   // synth.chain(pitchShift)
 
-  var part = new Tone.Part(function(time:string, note:string){
+  var part = new Tone.Part(function(time:any, value:any){
     //the notes given as the second element in the array
     //will be passed in as the second argument
     beatStart = timer.currentTime;
-    synth.triggerAttackRelease(note, "16n", time);
+    synth.triggerAttackRelease(value.note, value.dur, time);
   }, baseBeat).start();
   part.loop = true; 
   part.loopEnd = '1m'
